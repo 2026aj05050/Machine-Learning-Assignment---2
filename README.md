@@ -1,96 +1,132 @@
-# Dry Bean Classification – ML Assignment 2
+# Dry Bean Classification — BITS Pilani Machine Learning Assignment 2
 
-This repo contains my submission for Machine Learning Assignment 2. I trained five classification models on the UCI Dry Bean dataset and put them behind a small Streamlit app so the results can be checked on any test file without retraining.
+## 1. Problem Statement
+The goal of this project is to automate the classification of seven distinct registered varieties of dry beans (`BARBUNYA`, `BOMBAY`, `CALI`, `DERMASON`, `HOROZ`, `SEKER`, and `SIRA`) based on 16 computer-vision-extracted morphological and geometric features. 
 
-## a. Problem statement
+Accurate classification using machine learning enables high-throughput quality control, seed certification, and commercial grading without manual, labor-intensive inspection. This end-to-end pipeline evaluates five supervised machine learning models on a stratified 80/20 split, serializes trained models and preprocessing artifacts, and provides an interactive Streamlit web application for real-time model evaluation using held-out test data.
 
-Given a set of shape and size measurements taken from images of dried beans, predict which of the seven bean varieties a sample belongs to. This is a multi-class classification problem (7 classes). The practical use is automatic sorting of bean seeds for quality control instead of doing it by hand.
+---
 
-## b. Dataset description
+## 2. Dataset Description
+* **Dataset Name:** UCI Dry Bean Dataset
+* **Source:** UCI Machine Learning Repository / OpenML
+* **Instances:** 13,611 physical grain samples
+* **Features:** 16 numeric continuous features (extracted from high-resolution grain images):
+  1. `Area`: Area of bean zone ($A$)
+  2. `Perimeter`: Perimeter of bean ($P$)
+  3. `MajorAxisLength`: Longest distance ($L$)
+  4. `MinorAxisLength`: Smallest distance ($l$)
+  5. `AspectRation`: Aspect ratio ($K = L / l$)
+  6. `Eccentricity`: Eccentricity of fitted ellipse
+  7. `ConvexArea`: Area of smallest convex polygon containing bean
+  8. `EquivDiameter`: Equivalent diameter ($\sqrt{4A / \pi}$)
+  9. `Extent`: Ratio of pixel area to bounding box area
+  10. `Solidity`: Ratio of area to convex area
+  11. `Roundness`: Roundness degree ($4 \pi A / P^2$)
+  12. `Compactness`: Measure of roundness ($E = \sqrt{4A/\pi} / L$)
+  13. `ShapeFactor1`: Morphological shape metric 1
+  14. `ShapeFactor2`: Morphological shape metric 2
+  15. `ShapeFactor3`: Morphological shape metric 3
+  16. `ShapeFactor4`: Morphological shape metric 4
+* **Target Class:** 7 categories (`BARBUNYA`, `BOMBAY`, `CALI`, `DERMASON`, `HOROZ`, `SEKER`, `SIRA`).
 
-- **Source:** UCI Machine Learning Repository – Dry Bean Dataset (https://archive.ics.uci.edu/dataset/602/dry+bean+dataset)
-- **Instances:** 13,611
-- **Features:** 16 numeric features (12 dimensional measurements + 4 shape factors): Area, Perimeter, MajorAxisLength, MinorAxisLength, AspectRation, Eccentricity, ConvexArea, EquivDiameter, Extent, Solidity, roundness, Compactness, ShapeFactor1–4
-- **Target:** `Class` – one of BARBUNYA, BOMBAY, CALI, DERMASON, HOROZ, SEKER, SIRA
-- **Missing values:** none
+---
 
-The classes are a bit imbalanced (DERMASON has 3,546 samples while BOMBAY only has 522), so I looked at macro-averaged metrics as well as accuracy. All features are continuous, so I standardised them with `StandardScaler` before training the models that are sensitive to feature scale (logistic regression, KNN and SVM). I kept 20% of the data as a stratified test split, which is the `test_data.csv` used by the app.
+## 3. Mandatory Links
+* **GitHub Public Repository:** [https://github.com/2026aj05050/Machine-Learning-Assignment---2-](https://github.com/2026aj05050/Machine-Learning-Assignment---2-)
+* **Live Deployed Streamlit App:** [https://ngjbaxjniekgeznf3siybr.streamlit.app/](https://ngjbaxjniekgeznf3siybr.streamlit.app/)
+* **Held-Out Test Data File:** `test_data.csv` (located in the repository root directory)
 
-## c. GitHub repository link
+---
 
-<!-- paste your repository URL here after you push the code -->
-https://github.com/<your-username>/dry-bean-classification
+## 4. Model Evaluation & Metrics
 
-## d. Models used
+All models were evaluated on the exact same 20% held-out test set ($N = 2,723$) using a fixed random seed (`SEED = 17`). Standard scaling (`StandardScaler`) was fitted exclusively on the training set.
 
-All five models were trained on the same 80/20 stratified split. AUC is the macro one-vs-rest ROC AUC, and precision/recall/F1 are macro-averaged so every bean class counts equally.
+### Performance Comparison Table
 
-| ML Model Name | Accuracy | AUC | Precision | Recall | F1 | MCC |
-|---|---|---|---|---|---|---|
-| Logistic Regression | 0.9192 | 0.9946 | 0.9321 | 0.9311 | 0.9316 | 0.9023 |
-| Decision Tree | 0.9019 | 0.9541 | 0.9130 | 0.9130 | 0.9130 | 0.8815 |
-| KNN | 0.9203 | 0.9881 | 0.9330 | 0.9307 | 0.9316 | 0.9037 |
-| Naive Bayes | 0.8895 | 0.9909 | 0.8972 | 0.9007 | 0.8988 | 0.8666 |
-| Support Vector Machine | 0.9258 | 0.9953 | 0.9380 | 0.9350 | 0.9364 | 0.9103 |
+| Model | Accuracy | AUC (Macro OvR) | Precision (Macro) | Recall (Macro) | F1 Score (Macro) | MCC |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Logistic Regression** | 0.9251 | 0.9935 | 0.9324 | 0.9231 | 0.9275 | 0.9102 |
+| **Decision Tree** | 0.8950 | 0.9372 | 0.8981 | 0.8964 | 0.8972 | 0.8741 |
+| **K-Nearest Neighbors (KNN)** | 0.9240 | 0.9856 | 0.9301 | 0.9215 | 0.9256 | 0.9088 |
+| **Naive Bayes (GaussianNB)** | 0.8975 | 0.9870 | 0.9015 | 0.8988 | 0.8995 | 0.8772 |
+| **Support Vector Machine (SVM)** | **0.9302** | **0.9948** | **0.9365** | **0.9288** | **0.9325** | **0.9163** |
 
-### Observations
+---
 
-| ML Model Name | Observation about model performance |
-|---|---|
-| Logistic Regression | Surprisingly strong for a linear model – 91.9% accuracy and the second highest AUC (0.9946). The classes separate fairly well once the features are scaled, so a linear boundary already does most of the job. |
-| Decision Tree | Weakest of the five. It still reaches 90% accuracy but its AUC (0.9541) is well below the rest because a single tree gives hard, less calibrated probabilities. I capped the depth at 12 to stop it overfitting. |
-| KNN | Very close to logistic regression (92.0% accuracy). With scaled features k=7 neighbours works nicely, though it is the slowest at prediction time and the model file is large since it stores the training set. |
-| Naive Bayes | Lowest accuracy and MCC. The Gaussian assumption and the fact that features like Area and ConvexArea are strongly correlated hurt it, but it is extremely fast to train and still keeps a high AUC (0.9909). |
-| Support Vector Machine | Best overall on every metric – 92.6% accuracy, 0.9953 AUC and 0.9103 MCC. The RBF kernel handles the non-linear boundaries between similar bean types (SIRA vs DERMASON) better than the others. |
-| **Overall, winner for this dataset?** | **Support Vector Machine** – it tops accuracy, AUC, precision, recall, F1 and MCC, though logistic regression and KNN are close enough to be good lightweight alternatives. |
+## 5. Performance Observations & Comparison
 
-## Project structure
+| Model | Key Strengths & Behavioral Analysis | Limitations / Weaknesses |
+| :--- | :--- | :--- |
+| **Logistic Regression** | Strong baseline performance (92.51% accuracy); benefits from feature standardization across linear boundaries. High macro AUC (0.9935). | Slightly underperforms SVM on subtle non-linear boundaries between overlapping classes (`DERMASON` vs `SIRA`). |
+| **Decision Tree** | Fast, intuitive, and non-parametric. High interpretability with explicit decision boundaries. | Prone to local variance and overfitting; lowest overall accuracy (89.50%) and MCC (0.8741). |
+| **K-Nearest Neighbors (KNN)** | Robust distance-based performance (92.40% accuracy) as morphological metrics form tight spatial clusters. | Inference computational cost scales with dataset size; sensitive to noise in boundaries. |
+| **Naive Bayes (GaussianNB)** | Computationally efficient probabilistic classifier; solid macro AUC (0.9870). | Feature independence assumption is partially violated due to high correlation among dimension features. |
+| **Support Vector Machine (SVM)** | **Top Overall Performer.** RBF kernel effectively models non-linear feature interactions, achieving 93.02% accuracy and 0.9163 MCC. | High calibration overhead during probability estimation. |
+
+### Overall Winner Selection
+**Support Vector Machine (SVM)** is selected as the best overall model. It achieves top performance across all six evaluation metrics:
+* Highest **Accuracy** ($93.02\%$)
+* Highest **Macro OvR AUC** ($0.9948$)
+* Highest **F1 Score** ($0.9325$)
+* Highest **Matthews Correlation Coefficient (MCC)** ($0.9163$)
+
+---
+
+## 6. Repository Directory Structure
 
 ```text
-.
-├── app.py                     # Streamlit app (loads models, evaluates uploaded CSV)
-├── train_models.py            # trains the 5 models and saves everything
-├── requirements.txt
-├── test_data.csv              # held-out 20% test split (upload this in the app)
+Machine-Learning-Assignment---2-/
+├── app.py                      # Streamlit web application
+├── train_models.py             # Script to train, evaluate, and serialize models
+├── requirements.txt            # Project dependencies
+├── README.md                   # Assignment documentation and comparison metrics
+├── test_data.csv               # 20% held-out test dataset (raw features + label)
 ├── data/
-│   └── dry_bean.xlsx          # raw dataset from UCI
-└── model/
+│   └── Dry_Bean_Dataset.xlsx   # Raw input dataset
+└── model/                      # Serialized model artifacts
     ├── logistic_regression.joblib
     ├── decision_tree.joblib
     ├── knn.joblib
     ├── naive_bayes.joblib
-    ├── support_vector_machine.joblib
+    ├── svm.joblib
     ├── scaler.joblib
     ├── label_encoder.joblib
     ├── feature_columns.json
     └── metrics.csv
+
+
+## 7. Local Setup & Execution Instructions
+
+### Prerequisites
+* Python 3.9 or higher
+
+### Step 1: Clone Repository & Create Virtual Environment
+```bash
+git clone [https://github.com/2026aj05050/Machine-Learning-Assignment---2-.git](https://github.com/2026aj05050/Machine-Learning-Assignment---2-.git)
+cd Machine-Learning-Assignment---2-
+
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
 ```
 
-## How to run locally
-
+### Step 2: Install Required Dependencies
 ```bash
 pip install -r requirements.txt
-python train_models.py         # only needed to regenerate the model files
-streamlit run app.py
 ```
 
-Then open the local URL, pick a model in the sidebar and upload `test_data.csv`.
+### Step 3: Run Model Training (Optional)
+To retrain the models and regenerate serialized artifacts in `model/`:
+```bash
+python train_models.py
+```
 
-## About the app
-
-The Streamlit app:
-
-- lets you upload a test CSV (only the test data, as suggested in the instructions),
-- has a dropdown to choose any of the five models,
-- shows all six evaluation metrics for the selected model and a comparison table for
-  all five models at once,
-- draws the confusion matrix and the full classification report.
-
-Important: the app **loads the already-trained models from the `model/` folder and
-only evaluates** the uploaded data. It never retrains, which is why the metrics stay
-consistent with what `train_models.py` produced.
-
-## Live app
-
-<!-- paste your Streamlit Community Cloud URL here after you deploy -->
-https://<your-app-name>.streamlit.app
+### Step 4: Run Streamlit Web Application
+```bash
+streamlit run app.py
+```
+Open [http://localhost:8501](http://localhost:8501) in your browser, choose a model from the sidebar dropdown, and upload `test_data.csv` to perform live batch evaluation.
